@@ -1,0 +1,559 @@
+#!/usr/bin/python
+# -*- python -*-
+#
+# Keycode Map Generator
+#
+# Copyright (C) 2009-2017 Red Hat, Inc.
+#
+# This file is dual license under the terms of the GPLv2 or later
+# and 3-clause BSD licenses.
+#
+
+import csv
+import argparse
+import hashlib
+import time
+
+class Database:
+
+    # Linux: linux/input.h
+    MAP_LINUX = "linux"
+
+    # OS-X: Carbon/HIToolbox/Events.h
+    MAP_OSX = "osx"
+
+    # AT Set 1: linux/drivers/input/keyboard/atkbd.c
+    #           (atkbd_set2_keycode + atkbd_unxlate_table)
+    MAP_ATSET1 = "atset1"
+
+    # AT Set 2: linux/drivers/input/keyboard/atkbd.c
+    #           (atkbd_set2_keycode)
+    MAP_ATSET2 = "atset2"
+
+    # AT Set 3: linux/drivers/input/keyboard/atkbd.c
+    #           (atkbd_set3_keycode)
+    MAP_ATSET3 = "atset3"
+
+    # XT: linux/drivers/input/keyboard/xt.c (xtkbd_keycode)
+    MAP_XT = "xt"
+
+    # Linux RAW: linux/drivers/char/keyboard.c (x86_keycodes)
+    MAP_XTKBD = "xtkbd"
+
+    # USB HID: linux/drivers/hid/usbhid/usbkbd.c (usb_kbd_keycode)
+    MAP_USB = "usb"
+
+    # Win32: mingw32/winuser.h
+    MAP_WIN32 = "win32"
+
+    # XWin XT: xorg-server/hw/xwin/{winkeybd.c,winkeynames.h}
+    #          (xt + manually transcribed)
+    MAP_XWINXT = "xwinxt"
+
+    # XKBD XT: xf86-input-keyboard/src/at_scancode.c
+    #          (xt + manually transcribed)
+    MAP_XKBDXT = "xkbdxt"
+
+    # Xorg with evdev: linux + an offset
+    MAP_XORGEVDEV = "xorgevdev"
+
+    # Xorg with kbd: xkbdxt + an offset
+    MAP_XORGKBD = "xorgkbd"
+
+    # Xorg with OS-X: osx + an offset
+    MAP_XORGXQUARTZ = "xorgxquartz"
+
+    # Xorg + Cygwin: xwinxt + an offset
+    MAP_XORGXWIN = "xorgxwin"
+
+    # XT over RFB: xtkbd + special re-encoding of high bit
+    MAP_RFB = "rfb"
+
+    MAP_LIST = (
+        MAP_LINUX,
+        MAP_OSX,
+        MAP_ATSET1,
+        MAP_ATSET2,
+        MAP_ATSET3,
+        MAP_XT,
+        MAP_XTKBD,
+        MAP_USB,
+        MAP_WIN32,
+        MAP_XWINXT,
+        MAP_XKBDXT,
+
+        # These are derived from maps above
+        MAP_XORGEVDEV,
+        MAP_XORGKBD,
+        MAP_XORGXQUARTZ,
+        MAP_XORGXWIN,
+        MAP_RFB,
+    )
+
+    CODE_COLUMNS = {
+        MAP_LINUX: 1,
+        MAP_OSX: 3,
+        MAP_ATSET1: 4,
+        MAP_ATSET2: 5,
+        MAP_ATSET3: 6,
+        MAP_XT: 7,
+        MAP_XTKBD: 8,
+        MAP_USB: 9,
+        MAP_WIN32: 11,
+        MAP_XWINXT: 12,
+        MAP_XKBDXT: 13,
+    }
+
+    NAME_COLUMNS = {
+        MAP_LINUX: 0,
+        MAP_OSX: 2,
+        MAP_WIN32: 10,
+    }
+
+    def __init__(self):
+
+        self.mapto = {}
+        self.mapfrom = {}
+        self.mapname = {}
+        self.mapchecksum = None
+
+        for name in self.MAP_LIST:
+            # Key is a MAP_LINUX, value is a MAP_XXX
+            self.mapto[name] = {}
+            # key is a MAP_XXX, value is a MAP_LINUX
+            self.mapfrom[name] = {}
+
+        for name in self.NAME_COLUMNS.keys():
+            # key is a MAP_LINUX, value is a string
+            self.mapname[name] = {}
+
+    def _generate_checksum(self, filename):
+        hash = hashlib.sha256()
+        with open(filename, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash.update(chunk)
+        self.mapchecksum = hash.hexdigest()
+
+    def load(self, filename):
+        self._generate_checksum(filename)
+
+        with open(filename, 'rb') as f:
+            reader = csv.reader(f)
+
+            # Discard column headings
+            reader.next()
+
+            for row in reader:
+                # We special case MAP_LINUX since that is out
+                # master via which all other mappings are done
+                linux = self.load_linux(row)
+
+                # Now load all the remaining master data values
+                self.load_data(row, linux)
+
+                # Then load all the keycode names
+                self.load_names(row, linux)
+
+                # Finally calculate derived key maps
+                self.derive_data(row, linux)
+
+    def load_linux(self, row):
+        col = self.CODE_COLUMNS[self.MAP_LINUX]
+        linux = row[col]
+
+        if linux.startswith("0x"):
+            linux = int(linux, 16)
+        else:
+            linux = int(linux, 10)
+
+        self.mapto[self.MAP_LINUX][linux] = linux
+        self.mapfrom[self.MAP_LINUX][linux] = linux
+
+        return linux
+
+
+    def load_data(self, row, linux):
+        for mapname in self.CODE_COLUMNS:
+            if mapname == self.MAP_LINUX:
+                continue
+
+            col = self.CODE_COLUMNS[mapname]
+            val = row[col]
+
+            if val == "":
+                continue
+
+            if val.startswith("0x"):
+                val = int(val, 16)
+            else:
+                val = int(val, 10)
+
+            self.mapto[mapname][linux] = val
+            self.mapfrom[mapname][val] = linux
+
+    def load_names(self, row, linux):
+        for mapname in self.NAME_COLUMNS:
+            col = self.NAME_COLUMNS[mapname]
+            val = row[col]
+
+            if val == "":
+                continue
+
+            self.mapname[mapname][linux] = val
+
+
+    def derive_data(self, row, linux):
+        # Xorg KBD is XKBD XT offset by 8
+        if linux in self.mapto[self.MAP_XKBDXT]:
+            xorgkbd = self.mapto[self.MAP_XKBDXT][linux] + 8
+            self.mapto[self.MAP_XORGXQUARTZ][linux] = xorgkbd
+            self.mapfrom[self.MAP_XORGXQUARTZ][xorgkbd] = linux
+
+        # Xorg evdev is Linux offset by 8
+        self.mapto[self.MAP_XORGEVDEV][linux] = linux + 8
+        self.mapfrom[self.MAP_XORGEVDEV][linux + 8] = linux
+
+        # Xorg XQuartx is OS-X offset by 8
+        if linux in self.mapto[self.MAP_OSX]:
+            xorgxquartz = self.mapto[self.MAP_OSX][linux] + 8
+            self.mapto[self.MAP_XORGXQUARTZ][linux] = xorgxquartz
+            self.mapfrom[self.MAP_XORGXQUARTZ][xorgxquartz] = linux
+
+        # Xorg Xwin (aka Cygwin) is XWin XT offset by 8
+        if linux in self.mapto[self.MAP_XWINXT]:
+            xorgxwin = self.mapto[self.MAP_XWINXT][linux] + 8
+            self.mapto[self.MAP_XORGXWIN][linux] = xorgxwin
+            self.mapfrom[self.MAP_XORGXWIN][xorgxwin] = linux
+
+
+        # RFB keycodes are XT kbd keycodes with a slightly
+        # different encoding of 0xe0 scan codes. RFB uses
+        # the high bit of the first byte, instead of the low
+        # bit of the second byte
+        if linux in self.mapto[self.MAP_XTKBD]:
+            xtkbd = self.mapto[self.MAP_XTKBD][linux]
+            if xtkbd != 0:
+                rfb = ((xtkbd & 0x100) >> 1) | (xtkbd & 0x7f)
+            else:
+                rfb = 0
+            self.mapto[self.MAP_RFB][linux] = rfb
+            self.mapfrom[self.MAP_RFB][rfb] = linux
+
+class LanguageGenerator(object):
+
+    def generate_header(self, database, args):
+        today = time.strftime("%Y-%m-%d %H:%M")
+        self._boilerplate([
+            "This file is auto-generated from keymaps.csv on %s" % today,
+            "Database checksum sha256(%s)" % database.mapchecksum,
+            "To re-generate, run:",
+            "  %s" % args,
+        ])
+
+    def generate_code_map(self, varname, database, frommapname, tomapname):
+        if frommapname not in database.mapfrom:
+            raise Exception("Unknown map %s, expected %s",
+                            frommapname, ",".join(database.mapfrom.keys()))
+        if tomapname not in database.mapto:
+            raise Exception("Unknown map %s, expected %s",
+                            tomapname, ",".join(database.mapto.keys()))
+
+        tolinux = database.mapfrom[frommapname]
+        fromlinux = database.mapto[tomapname]
+
+        if varname is None:
+            varname = "code_map_%s_to_%s" % (frommapname, tomapname)
+
+        frommax = 0
+        for key in tolinux.keys():
+            if key > frommax:
+                frommax = key
+
+        self._array_start_code(varname, frommax + 1)
+        for src in range(frommax + 1):
+            linux = tolinux.get(src, None)
+            if linux is None:
+                dst = None
+            else:
+                dst = fromlinux.get(linux, None)
+
+            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src),
+                                          self._label(database, Database.MAP_LINUX, linux),
+                                          self._label(database, tomapname, dst))
+            self._array_entry_code(src, dst, comment)
+        self._array_end()                                        
+
+    def generate_code_table(self, varname, database, mapname):
+        if mapname not in database.mapto:
+            raise Exception("Unknown map %s, expected %s",
+                            mapname, ",".join(database.mapto.keys()))
+
+        keys = database.mapto[Database.MAP_LINUX].keys()
+        keys.sort()
+        names = [database.mapname[Database.MAP_LINUX].get(key, "unnamed") for key in keys]
+
+        if varname is None:
+            varname = "code_table_%s" % mapname
+
+        self._array_start_code(varname, len(keys))
+
+        for i in range(len(keys)):
+            key = keys[i]
+            dst = database.mapto[mapname].get(key, None)
+            self._array_entry_code(i, dst, names[i])
+
+        self._array_end()
+
+    def generate_name_map(self, varname, database, frommapname, tomapname):
+        if frommapname not in database.mapfrom:
+            raise Exception("Unknown map %s, expected %s",
+                            frommapname, ",".join(database.mapfrom.keys()))
+        if tomapname not in database.mapname:
+            raise Exception("Unknown map %s, expected %s",
+                            tomapname, ",".join(database.mapname.keys()))
+
+        tolinux = database.mapfrom[frommapname]
+        fromlinux = database.mapname[tomapname]
+
+        if varname is None:
+            varname = "name_map_%s_to_%s" % (frommapname, tomapname)
+
+        frommax = 0
+        for key in tolinux.keys():
+            if key > frommax:
+                frommax = key
+
+        self._array_start_name(varname, frommax + 1)
+
+        for src in range(frommax + 1):
+            linux = tolinux.get(src, None)
+            if linux is None:
+                dst = None
+            else:
+                dst = fromlinux.get(linux, None)
+
+            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src),
+                                          self._label(database, Database.MAP_LINUX, linux),
+                                          self._label(database, tomapname, dst))
+            self._array_entry_name(src, dst, comment)
+        self._array_end()                                        
+
+    def generate_name_table(self, varname, database, mapname):
+        if mapname not in database.mapname:
+            raise Exception("Unknown map %s, expected %s",
+                            mapname, ",".join(database.mapname.keys()))
+
+        keys = database.mapto[Database.MAP_LINUX].keys()
+        keys.sort()
+        names = [database.mapname[Database.MAP_LINUX].get(key, "unnamed") for key in keys]
+
+        if varname is None:
+            varname = "name_table_%s" % mapname
+
+        self._array_start_name(varname, len(keys))
+
+        for i in range(len(keys)):
+            key = keys[i]
+            dst = database.mapname[mapname].get(key, None)
+            self._array_entry_name(i, dst, names[i])
+
+        self._array_end()
+
+    def _label(self, database, mapname, val):
+        if mapname in database.mapname:
+            return "%s:%s (%s)" % (mapname, val, database.mapname[mapname].get(val, "unnamed"))
+        else:
+            return "%s:%s" % (mapname, val)
+
+
+class CLanguageGenerator(LanguageGenerator):
+
+    def __init__(self, inttypename, strtypename):
+        self.inttypename = inttypename
+        self.strtypename = strtypename
+
+    def _boilerplate(self, lines):
+        print "/*"
+        for line in lines:
+            print " * %s" % line
+        print "*/"
+
+    def _array_start_code(self, varname, length):
+        print "const %s %s[%d] = {" % (self.inttypename, varname, length)
+
+    def _array_start_name(self, varname, length):
+        print "const %s %s[%d] = {" % (self.strtypename, varname, length)
+
+    def _array_end(self):
+        print "};"
+
+    def _array_entry_code(self, index, value, comment):
+        if value is not None:
+            print "  [0x%x] = 0x%x, /* %s */" % (index, value, comment)
+
+    def _array_entry_name(self, index, value, comment):
+        if value is not None:
+            print "  [0x%x] = \"%s\", /* %s */" % (index, value, comment)
+
+class StdCLanguageGenerator(CLanguageGenerator):
+
+    def __init__(self):
+        super(StdCLanguageGenerator, self).__init__("int", "char *")
+
+class GLib2LanguageGenerator(CLanguageGenerator):
+
+    def __init__(self):
+        super(GLib2LanguageGenerator, self).__init__("gint32", "gchar *")
+
+class PythonLanguageGenerator(LanguageGenerator):
+
+    def _boilerplate(self, lines):
+        print "#"
+        for line in lines:
+            print "# %s" % line
+        print "#"
+
+    def _array_start_code(self, varname, length):
+        print "%s = [" % varname
+
+    def _array_start_name(self, varname, length):
+        print "%s = [" % varname
+
+    def _array_end(self):
+        print "]"
+
+    def _array_entry_code(self, index, value, comment):
+        if value is None:
+            print "  None, # %s" % (comment)
+        else:
+            print "  0x%x, # %s" % (value, comment)
+
+    def _array_entry_name(self, index, value, comment):
+        if value is None:
+            print "  None, # %s" % (comment)
+        else:
+            print "  \"%s\", # %s" % (value, comment)
+
+class PerlLanguageGenerator(LanguageGenerator):
+
+    def _boilerplate(self, lines):
+        print "#"
+        for line in lines:
+            print "# %s" % line
+        print "#"
+
+    def _array_start_code(self, varname, length):
+        print "my @%s = (" % varname
+
+    def _array_start_name(self, varname, length):
+        print "my @%s = (" % varname
+
+    def _array_end(self):
+        print ");"
+
+    def _array_entry_code(self, index, value, comment):
+        if value is None:
+            print "  undef, # %s" % (comment)
+        else:
+            print "  0x%x, # %s" % (value, comment)
+
+    def _array_entry_name(self, index, value, comment):
+        if value is None:
+            print "  undef, # %s" % (comment)
+        else:
+            print "  \"%s\", # %s" % (value, comment)
+
+GENERATORS = {
+    "stdc": StdCLanguageGenerator(),
+    "glib2": StdCLanguageGenerator(),
+    "python2": PythonLanguageGenerator(),
+    "python3": PythonLanguageGenerator(),
+    "perl": PerlLanguageGenerator(),
+}
+
+def code_map(args):
+    database = Database()
+    database.load(args.keymaps)
+
+    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    if args.varname is not None:
+        cliargs.append("--varname=%s" % args.varname)
+    cliargs.extend(["code-map", "keymaps.csv", args.frommapname, args.tomapname])
+    GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
+
+    GENERATORS[args.lang].generate_code_map(args.varname, database, args.frommapname, args.tomapname)
+
+def code_table(args):
+    database = Database()
+    database.load(args.keymaps)
+
+    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    if args.varname is not None:
+        cliargs.append("--varname=%s" % args.varname)
+    cliargs.extend(["code-table", "keymaps.csv", args.mapname])
+    GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
+
+    GENERATORS[args.lang].generate_code_table(args.varname, database, args.mapname)
+
+def name_map(args):
+    database = Database()
+    database.load(args.keymaps)
+
+    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    if args.varname is not None:
+        cliargs.append("--varname=%s" % args.varname)
+    cliargs.extend(["name-map", "keymaps.csv", args.frommapname, args.tomapname])
+    GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
+
+    GENERATORS[args.lang].generate_name_map(args.varname, database, args.frommapname, args.tomapname)
+
+def name_table(args):
+    database = Database()
+    database.load(args.keymaps)
+
+
+    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    if args.varname is not None:
+        cliargs.append("--varname=%s" % args.varname)
+    cliargs.extend(["name-table", "keymaps.csv", args.mapname])
+    GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
+
+    GENERATORS[args.lang].generate_name_table(args.varname, database, args.mapname)
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--lang", default="stdc",
+                        help="Output language, %s" % ",".join(GENERATORS.keys()))
+    parser.add_argument("--varname", default=None,
+                        help="Data variable name")
+
+    subparsers = parser.add_subparsers(help="sub-command help")
+
+    codemapparser = subparsers.add_parser("code-map", help="Generate a mapping between code tables")
+    codemapparser.add_argument("keymaps", help="Path to keymap CSV data file")
+    codemapparser.add_argument("frommapname", help="Source code table name")
+    codemapparser.add_argument("tomapname", help="Target code table name")
+    codemapparser.set_defaults(func=code_map)
+
+    codetableparser = subparsers.add_parser("code-table", help="Generate a flat code table")
+    codetableparser.add_argument("keymaps", help="Path to keymap CSV data file")
+    codetableparser.add_argument("mapname", help="Code table name")
+    codetableparser.set_defaults(func=code_table)
+
+    namemapparser = subparsers.add_parser("name-map", help="Generate a mapping to names")
+    namemapparser.add_argument("keymaps", help="Path to keymap CSV data file")
+    namemapparser.add_argument("frommapname", help="Source code table name")
+    namemapparser.add_argument("tomapname", help="Target name table name")
+    namemapparser.set_defaults(func=name_map)
+
+    nametableparser = subparsers.add_parser("name-table", help="Generate a flat name table")
+    nametableparser.add_argument("keymaps", help="Path to keymap CSV data file")
+    nametableparser.add_argument("mapname", help="Name table name")
+    nametableparser.set_defaults(func=name_table)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+main()
