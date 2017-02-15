@@ -9,6 +9,9 @@
 # and 3-clause BSD licenses.
 #
 
+# Requires >= 2.6
+from __future__ import print_function
+
 import csv
 import argparse
 import hashlib
@@ -383,27 +386,27 @@ class CLanguageGenerator(LanguageGenerator):
         self.strtypename = strtypename
 
     def _boilerplate(self, lines):
-        print "/*"
+        print("/*")
         for line in lines:
-            print " * %s" % line
-        print "*/"
+            print(" * %s" % line)
+        print("*/")
 
     def _array_start_code(self, varname, length):
-        print "const %s %s[%d] = {" % (self.inttypename, varname, length)
+        print("const %s %s[%d] = {" % (self.inttypename, varname, length))
 
     def _array_start_name(self, varname, length):
-        print "const %s %s[%d] = {" % (self.strtypename, varname, length)
+        print("const %s %s[%d] = {" % (self.strtypename, varname, length))
 
     def _array_end(self):
-        print "};"
+        print("};")
 
     def _array_entry_code(self, index, value, comment):
         if value is not None:
-            print "  [0x%x] = 0x%x, /* %s */" % (index, value, comment)
+            print("  [0x%x] = 0x%x, /* %s */" % (index, value, comment))
 
     def _array_entry_name(self, index, value, comment):
         if value is not None:
-            print "  [0x%x] = \"%s\", /* %s */" % (index, value, comment)
+            print("  [0x%x] = \"%s\", /* %s */" % (index, value, comment))
 
 class StdCLanguageGenerator(CLanguageGenerator):
 
@@ -418,60 +421,60 @@ class GLib2LanguageGenerator(CLanguageGenerator):
 class PythonLanguageGenerator(LanguageGenerator):
 
     def _boilerplate(self, lines):
-        print "#"
+        print("#")
         for line in lines:
-            print "# %s" % line
-        print "#"
+            print("# %s" % line)
+        print("#")
 
     def _array_start_code(self, varname, length):
-        print "%s = [" % varname
+        print("%s = [" % varname)
 
     def _array_start_name(self, varname, length):
-        print "%s = [" % varname
+        print("%s = [" % varname)
 
     def _array_end(self):
-        print "]"
+        print("]")
 
     def _array_entry_code(self, index, value, comment):
         if value is None:
-            print "  None, # %s" % (comment)
+            print("  None, # %s" % (comment))
         else:
-            print "  0x%x, # %s" % (value, comment)
+            print("  0x%x, # %s" % (value, comment))
 
     def _array_entry_name(self, index, value, comment):
         if value is None:
-            print "  None, # %s" % (comment)
+            print("  None, # %s" % (comment))
         else:
-            print "  \"%s\", # %s" % (value, comment)
+            print("  \"%s\", # %s" % (value, comment))
 
 class PerlLanguageGenerator(LanguageGenerator):
 
     def _boilerplate(self, lines):
-        print "#"
+        print("#")
         for line in lines:
-            print "# %s" % line
-        print "#"
+            print("# %s" % line)
+        print("#")
 
     def _array_start_code(self, varname, length):
-        print "my @%s = (" % varname
+        print("my @%s = (" % varname)
 
     def _array_start_name(self, varname, length):
-        print "my @%s = (" % varname
+        print("my @%s = (" % varname)
 
     def _array_end(self):
-        print ");"
+        print(");")
 
     def _array_entry_code(self, index, value, comment):
         if value is None:
-            print "  undef, # %s" % (comment)
+            print("  undef, # %s" % (comment))
         else:
-            print "  0x%x, # %s" % (value, comment)
+            print("  0x%x, # %s" % (value, comment))
 
     def _array_entry_name(self, index, value, comment):
         if value is None:
-            print "  undef, # %s" % (comment)
+            print("  undef, # %s" % (comment))
         else:
-            print "  \"%s\", # %s" % (value, comment)
+            print("  \"%s\", # %s" % (value, comment))
 
 GENERATORS = {
     "stdc": StdCLanguageGenerator(),
