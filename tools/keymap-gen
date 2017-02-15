@@ -143,13 +143,17 @@ class Database:
     def load(self, filename):
         self._generate_checksum(filename)
 
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             reader = csv.reader(f)
 
-            # Discard column headings
-            reader.next()
+            first = True
 
             for row in reader:
+                # Discard column headings
+                if first:
+                    first = False
+                    continue
+
                 # We special case MAP_LINUX since that is out
                 # master via which all other mappings are done
                 linux = self.load_linux(row)
