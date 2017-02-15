@@ -533,6 +533,11 @@ def name_table(args):
 
     GENERATORS[args.lang].generate_name_table(args.varname, database, args.mapname)
 
+def usage(args):
+    print ("Please select a command:")
+    print ("  'code-map', 'code-table', 'name-map', 'name-table'")
+    sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -540,6 +545,7 @@ def main():
                         help="Output language, %s" % ",".join(GENERATORS.keys()))
     parser.add_argument("--varname", default=None,
                         help="Data variable name")
+    parser.set_defaults(func=usage)
 
     subparsers = parser.add_subparsers(help="sub-command help")
 
