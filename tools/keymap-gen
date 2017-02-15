@@ -50,6 +50,9 @@ class Database:
     #          (xt + manually transcribed)
     MAP_XWINXT = "xwinxt"
 
+    # X11: http://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
+    MAP_X11 = "x11"
+
     # XKBD XT: xf86-input-keyboard/src/at_scancode.c
     #          (xt + manually transcribed)
     MAP_XKBDXT = "xkbdxt"
@@ -81,6 +84,7 @@ class Database:
         MAP_WIN32,
         MAP_XWINXT,
         MAP_XKBDXT,
+        MAP_X11,
 
         # These are derived from maps above
         MAP_XORGEVDEV,
@@ -102,12 +106,14 @@ class Database:
         MAP_WIN32: 11,
         MAP_XWINXT: 12,
         MAP_XKBDXT: 13,
+        MAP_X11: 15,
     }
 
     NAME_COLUMNS = {
         MAP_LINUX: 0,
         MAP_OSX: 2,
         MAP_WIN32: 10,
+        MAP_X11: 14,
     }
 
     def __init__(self):
