@@ -219,8 +219,8 @@ class Database:
         # Xorg KBD is XKBD XT offset by 8
         if linux in self.mapto[self.MAP_XKBDXT]:
             xorgkbd = self.mapto[self.MAP_XKBDXT][linux] + 8
-            self.mapto[self.MAP_XORGXQUARTZ][linux] = xorgkbd
-            self.mapfrom[self.MAP_XORGXQUARTZ][xorgkbd] = linux
+            self.mapto[self.MAP_XORGKBD][linux] = xorgkbd
+            self.mapfrom[self.MAP_XORGKBD][xorgkbd] = linux
 
         # Xorg evdev is Linux offset by 8
         self.mapto[self.MAP_XORGEVDEV][linux] = linux + 8
