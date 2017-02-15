@@ -404,12 +404,12 @@ class CLanguageGenerator(LanguageGenerator):
 class StdCLanguageGenerator(CLanguageGenerator):
 
     def __init__(self):
-        super(StdCLanguageGenerator, self).__init__("int", "char *")
+        super(StdCLanguageGenerator, self).__init__("unsigned short", "char *")
 
 class GLib2LanguageGenerator(CLanguageGenerator):
 
     def __init__(self):
-        super(GLib2LanguageGenerator, self).__init__("gint32", "gchar *")
+        super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *")
 
 class PythonLanguageGenerator(LanguageGenerator):
 
