@@ -471,7 +471,7 @@ class PerlLanguageGenerator(LanguageGenerator):
 
 GENERATORS = {
     "stdc": StdCLanguageGenerator(),
-    "glib2": StdCLanguageGenerator(),
+    "glib2": GLib2LanguageGenerator(),
     "python2": PythonLanguageGenerator(),
     "python3": PythonLanguageGenerator(),
     "perl": PerlLanguageGenerator(),
