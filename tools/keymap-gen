@@ -16,6 +16,7 @@ import csv
 import argparse
 import hashlib
 import time
+import sys
 
 class Database:
 
