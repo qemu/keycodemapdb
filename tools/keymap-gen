@@ -687,7 +687,7 @@ def name_docs(args):
 
     DOC_GENERATORS[args.lang].generate_name_docs(args.varname, database, args.mapname)
 
-def usage(args):
+def usage():
     print ("Please select a command:")
     print ("  'code-map', 'code-table', 'name-map', 'name-table', 'docs'")
     sys.exit(1)
@@ -701,7 +701,6 @@ def main():
                             ",".join(DOC_GENERATORS.keys())))
     parser.add_argument("--varname", default=None,
                         help="Data variable name")
-    parser.set_defaults(func=usage)
 
     subparsers = parser.add_subparsers(help="sub-command help")
 
@@ -738,7 +737,10 @@ def main():
     namedocsparser.set_defaults(func=name_docs)
 
     args = parser.parse_args()
-    args.func(args)
+    if hasattr(args, "func"):
+        args.func(args)
+    else:
+        usage()
 
 
 main()
