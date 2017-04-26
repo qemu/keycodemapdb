@@ -286,11 +286,11 @@ class LanguageSrcGenerator(LanguageGenerator):
 
     def generate_code_map(self, varname, database, frommapname, tomapname):
         if frommapname not in database.mapfrom:
-            raise Exception("Unknown map %s, expected %s",
-                            frommapname, ",".join(database.mapfrom.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            frommapname, ", ".join(database.mapfrom.keys())))
         if tomapname not in database.mapto:
-            raise Exception("Unknown map %s, expected %s",
-                            tomapname, ",".join(database.mapto.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            tomapname, ", ".join(database.mapto.keys())))
 
         tolinux = database.mapfrom[frommapname]
         fromlinux = database.mapto[tomapname]
@@ -319,8 +319,8 @@ class LanguageSrcGenerator(LanguageGenerator):
 
     def generate_code_table(self, varname, database, mapname):
         if mapname not in database.mapto:
-            raise Exception("Unknown map %s, expected %s",
-                            mapname, ",".join(database.mapto.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            mapname, ", ".join(database.mapto.keys())))
 
         keys = database.mapto[Database.MAP_LINUX].keys()
         keys.sort()
@@ -340,11 +340,11 @@ class LanguageSrcGenerator(LanguageGenerator):
 
     def generate_name_map(self, varname, database, frommapname, tomapname):
         if frommapname not in database.mapfrom:
-            raise Exception("Unknown map %s, expected %s",
-                            frommapname, ",".join(database.mapfrom.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            frommapname, ", ".join(database.mapfrom.keys())))
         if tomapname not in database.mapname:
-            raise Exception("Unknown map %s, expected %s",
-                            tomapname, ",".join(database.mapname.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            tomapname, ", ".join(database.mapname.keys())))
 
         tolinux = database.mapfrom[frommapname]
         fromlinux = database.mapname[tomapname]
@@ -374,8 +374,8 @@ class LanguageSrcGenerator(LanguageGenerator):
 
     def generate_name_table(self, varname, database, mapname):
         if mapname not in database.mapname:
-            raise Exception("Unknown map %s, expected %s",
-                            mapname, ",".join(database.mapname.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            mapname, ", ".join(database.mapname.keys())))
 
         keys = database.mapto[Database.MAP_LINUX].keys()
         keys.sort()
@@ -418,8 +418,8 @@ class LanguageDocGenerator(LanguageGenerator):
 
     def generate_name_docs(self, varname, database, mapname):
         if mapname not in database.mapname:
-            raise Exception("Unknown map %s, expected %s",
-                            mapname, ",".join(database.mapname.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            mapname, ", ".join(database.mapname.keys())))
 
         keys = database.mapto[Database.MAP_LINUX].keys()
         keys.sort()
@@ -440,8 +440,8 @@ class LanguageDocGenerator(LanguageGenerator):
 
     def generate_code_docs(self, varname, database, mapname):
         if mapname not in database.mapfrom:
-            raise Exception("Unknown map %s, expected %s",
-                            mapname, ",".join(database.mapfrom.keys()))
+            raise Exception("Unknown map %s, expected one of %s" % (
+                            mapname, ", ".join(database.mapfrom.keys())))
 
         tolinux = database.mapfrom[mapname]
         keys = tolinux.keys()
