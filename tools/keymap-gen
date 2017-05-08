@@ -311,9 +311,9 @@ class LanguageSrcGenerator(LanguageGenerator):
             else:
                 dst = fromlinux.get(linux, None)
 
-            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src),
-                                          self._label(database, Database.MAP_LINUX, linux),
-                                          self._label(database, tomapname, dst))
+            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src, linux),
+                                          self._label(database, Database.MAP_LINUX, linux, linux),
+                                          self._label(database, tomapname, dst, linux))
             self._array_entry_code(src, dst, comment)
         self._array_end()                                        
 
@@ -366,9 +366,9 @@ class LanguageSrcGenerator(LanguageGenerator):
             else:
                 dst = fromlinux.get(linux, None)
 
-            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src),
-                                          self._label(database, Database.MAP_LINUX, linux),
-                                          self._label(database, tomapname, dst))
+            comment = "%s -> %s -> %s" % (self._label(database, frommapname, src, linux),
+                                          self._label(database, Database.MAP_LINUX, linux, linux),
+                                          self._label(database, tomapname, dst, linux))
             self._array_entry_name(src, dst, comment)
         self._array_end()                                        
 
@@ -393,9 +393,9 @@ class LanguageSrcGenerator(LanguageGenerator):
 
         self._array_end()
 
-    def _label(self, database, mapname, val):
+    def _label(self, database, mapname, val, linux):
         if mapname in database.mapname:
-            return "%s:%s (%s)" % (mapname, val, database.mapname[mapname].get(val, "unnamed"))
+            return "%s:%s (%s)" % (mapname, val, database.mapname[mapname].get(linux, "unnamed"))
         else:
             return "%s:%s" % (mapname, val)
 
