@@ -1,4 +1,4 @@
-"Linux Name","Linux Keycode","OS-X Name","OS-X Keycode","AT set1 keycode","AT set2 keycode","AT set3 keycode","USB Keycodes","Win32 Name","Win32 Keycode","Xwin XT","Xfree86 KBD XT","X11 keysym","X11 keycode"
+"Linux Name","Linux Keycode","OS-X Name","OS-X Keycode","AT set1 keycode","AT set2 keycode","AT set3 keycode","USB Keycodes","Win32 Name","Win32 Keycode","Xwin XT","Xfree86 KBD XT","X11 keysym name","X11 keysym"
 KEY_RESERVED,0,,,,,,,,,,,,
 KEY_ESC,1,Escape,0x35,0x01,0x76,0x08,41,VK_ESCAPE,0x1b,1,1,XK_Escape,0xff1b
 KEY_1,2,ANSI_1,0x12,0x02,0x16,0x16,30,VK_1,0x31,2,2,XK_1,0x0031
