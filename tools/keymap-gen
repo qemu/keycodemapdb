@@ -38,9 +38,6 @@ class Database:
     #           (atkbd_set3_keycode)
     MAP_ATSET3 = "atset3"
 
-    # XT: linux/drivers/input/keyboard/xt.c (xtkbd_keycode)
-    MAP_XT = "xt"
-
     # Linux RAW: linux/drivers/char/keyboard.c (x86_keycodes)
     MAP_XTKBD = "xtkbd"
 
@@ -82,8 +79,6 @@ class Database:
         MAP_ATSET1,
         MAP_ATSET2,
         MAP_ATSET3,
-        MAP_XT,
-        MAP_XTKBD,
         MAP_USB,
         MAP_WIN32,
         MAP_XWINXT,
@@ -91,6 +86,7 @@ class Database:
         MAP_X11,
 
         # These are derived from maps above
+        MAP_XTKBD,
         MAP_XORGEVDEV,
         MAP_XORGKBD,
         MAP_XORGXQUARTZ,
@@ -104,20 +100,18 @@ class Database:
         MAP_ATSET1: 4,
         MAP_ATSET2: 5,
         MAP_ATSET3: 6,
-        MAP_XT: 7,
-        MAP_XTKBD: 8,
-        MAP_USB: 9,
-        MAP_WIN32: 11,
-        MAP_XWINXT: 12,
-        MAP_XKBDXT: 13,
-        MAP_X11: 15,
+        MAP_USB: 7,
+        MAP_WIN32: 9,
+        MAP_XWINXT: 10,
+        MAP_XKBDXT: 11,
+        MAP_X11: 13,
     }
 
     NAME_COLUMNS = {
         MAP_LINUX: 0,
         MAP_OSX: 2,
-        MAP_WIN32: 10,
-        MAP_X11: 14,
+        MAP_WIN32: 8,
+        MAP_X11: 12,
     }
 
     def __init__(self):
@@ -217,6 +211,18 @@ class Database:
 
 
     def derive_data(self, row, linux):
+        # Linux RAW is XT scan codes with special encoding of the
+        # 0xe0 scan codes
+        if linux in self.mapto[self.MAP_ATSET1]:
+            at1 = self.mapto[self.MAP_ATSET1][linux]
+            if at1 > 0x7f:
+                assert((at1 & ~0x7f) == 0xe000)
+                xtkbd = 0x100 | (at1 & 0x7f)
+            else:
+                xtkbd = at1
+            self.mapto[self.MAP_XTKBD][linux] = xtkbd
+            self.mapfrom[self.MAP_XTKBD][xtkbd] = linux
+
         # Xorg KBD is XKBD XT offset by 8
         if linux in self.mapto[self.MAP_XKBDXT]:
             xorgkbd = self.mapto[self.MAP_XKBDXT][linux] + 8
@@ -239,17 +245,15 @@ class Database:
             self.mapto[self.MAP_XORGXWIN][linux] = xorgxwin
             self.mapfrom[self.MAP_XORGXWIN][xorgxwin] = linux
 
-
-        # RFB keycodes are XT kbd keycodes with a slightly
-        # different encoding of 0xe0 scan codes. RFB uses
-        # the high bit of the first byte, instead of the low
-        # bit of the second byte
-        if linux in self.mapto[self.MAP_XTKBD]:
-            xtkbd = self.mapto[self.MAP_XTKBD][linux]
-            if xtkbd != 0:
-                rfb = ((xtkbd & 0x100) >> 1) | (xtkbd & 0x7f)
+        # RFB keycodes are XT scan codes with a slightly
+        # different encoding of 0xe0 scan codes
+        if linux in self.mapto[self.MAP_ATSET1]:
+            at1 = self.mapto[self.MAP_ATSET1][linux]
+            if at1 > 0x7f:
+                assert((at1 & ~0x7f) == 0xe000)
+                rfb = 0x80 | (at1 & 0x7f)
             else:
-                rfb = 0
+                rfb = at1
             self.mapto[self.MAP_RFB][linux] = rfb
             self.mapfrom[self.MAP_RFB][rfb] = linux
 
