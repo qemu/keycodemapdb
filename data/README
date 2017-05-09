@@ -72,3 +72,11 @@ WARNING: These columns represent symbols, not physical keys, and should
          be used with extreme care.
 
 References: http://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
+
+HTML KeyboardEvent.code
+-----------------------
+
+Key codes seen in the KeyboardEvent.code attribute as part of the
+UI Events specification.
+
+References: https://www.w3.org/TR/uievents-code/

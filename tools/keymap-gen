@@ -73,6 +73,9 @@ class Database:
     # XT over RFB: xtkbd + special re-encoding of high bit
     MAP_RFB = "rfb"
 
+    # HTML codes
+    MAP_HTML = "html"
+
     MAP_LIST = (
         MAP_LINUX,
         MAP_OSX,
@@ -112,6 +115,7 @@ class Database:
         MAP_OSX: 2,
         MAP_WIN32: 8,
         MAP_X11: 12,
+        MAP_HTML: 14,
     }
 
     def __init__(self):
