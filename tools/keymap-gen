@@ -76,6 +76,9 @@ class Database:
     # HTML codes
     MAP_HTML = "html"
 
+    # XKB key names
+    MAP_XKB = "xkb"
+
     MAP_LIST = (
         MAP_LINUX,
         MAP_OSX,
@@ -116,6 +119,7 @@ class Database:
         MAP_WIN32: 8,
         MAP_X11: 12,
         MAP_HTML: 14,
+        MAP_XKB: 15,
     }
 
     def __init__(self):

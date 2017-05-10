@@ -80,3 +80,10 @@ Key codes seen in the KeyboardEvent.code attribute as part of the
 UI Events specification.
 
 References: https://www.w3.org/TR/uievents-code/
+
+XKEYBOARD key names
+-------------------
+
+Hardware independent key names as used in the XKEYBOARD extension.
+
+References: /usr/share/X11/xkb/keycodes/
