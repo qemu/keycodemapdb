@@ -493,10 +493,30 @@ class CLanguageGenerator(LanguageSrcGenerator):
         if value is not None:
             print("  [0x%x] = \"%s\", /* %s */" % (index, value, comment))
 
+class CppLanguageGenerator(CLanguageGenerator):
+
+    # designated initializers not available in C++
+    def _array_entry_code(self, index, value, comment):
+        if value is not None:
+            print("  0x%x, /* %s */" % (value, comment))
+        else:
+            print("  0, /* %s */" % comment)
+
+    def _array_entry_name(self, index, value, comment):
+        if value is not None:
+            print("  \"%s\", /* %s */" % (value, comment))
+        else:
+            print("  0, /* %s */" % comment)
+
 class StdCLanguageGenerator(CLanguageGenerator):
 
     def __init__(self):
         super(StdCLanguageGenerator, self).__init__("unsigned short", "char *")
+
+class StdCppLanguageGenerator(CppLanguageGenerator):
+
+    def __init__(self):
+        super(StdCppLanguageGenerator, self).__init__("unsigned short", "char *")
 
 class GLib2LanguageGenerator(CLanguageGenerator):
 
@@ -603,6 +623,7 @@ class PodLanguageGenerator(LanguageDocGenerator):
 
 SRC_GENERATORS = {
     "stdc": StdCLanguageGenerator(),
+    "stdc++": StdCppLanguageGenerator(),
     "glib2": GLib2LanguageGenerator(),
     "python2": PythonLanguageGenerator(),
     "python3": PythonLanguageGenerator(),
