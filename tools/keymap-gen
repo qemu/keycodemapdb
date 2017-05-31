@@ -90,6 +90,8 @@ class Database:
         MAP_XWINXT,
         MAP_XKBDXT,
         MAP_X11,
+        MAP_HTML,
+        MAP_XKB,
 
         # These are derived from maps above
         MAP_XTKBD,
@@ -111,6 +113,8 @@ class Database:
         MAP_XWINXT: 10,
         MAP_XKBDXT: 11,
         MAP_X11: 13,
+        MAP_HTML: 14,
+        MAP_XKB: 15,
     }
 
     NAME_COLUMNS = {
@@ -201,7 +205,7 @@ class Database:
 
             if val.startswith("0x"):
                 val = int(val, 16)
-            else:
+            elif val.isdigit():
                 val = int(val, 10)
 
             self.mapto[mapname][linux] = val
@@ -281,7 +285,7 @@ class LanguageGenerator(object):
 
 class LanguageSrcGenerator(LanguageGenerator):
 
-    def _array_start_code(self, varname, length):
+    def _array_start_code(self, varname, length, fromtype, totype):
         raise NotImplementedError()
 
     def _array_start_name(self, varname, length):
@@ -310,13 +314,13 @@ class LanguageSrcGenerator(LanguageGenerator):
         if varname is None:
             varname = "code_map_%s_to_%s" % (frommapname, tomapname)
 
-        frommax = 0
-        for key in tolinux.keys():
-            if key > frommax:
-                frommax = key
+        keys = tolinux.keys()
+        keys.sort()
+        if type(keys[0]) == int:
+            keys = range(keys[-1] + 1)
 
-        self._array_start_code(varname, frommax + 1)
-        for src in range(frommax + 1):
+        self._array_start_code(varname, len(keys), type(keys[0]), type(fromlinux.values()[0]))
+        for src in keys:
             linux = tolinux.get(src, None)
             if linux is None:
                 dst = None
@@ -341,7 +345,7 @@ class LanguageSrcGenerator(LanguageGenerator):
         if varname is None:
             varname = "code_table_%s" % mapname
 
-        self._array_start_code(varname, len(keys))
+        self._array_start_code(varname, len(keys), int, type(database.mapto[mapname].values()[0]))
 
         for i in range(len(keys)):
             key = keys[i]
@@ -364,14 +368,14 @@ class LanguageSrcGenerator(LanguageGenerator):
         if varname is None:
             varname = "name_map_%s_to_%s" % (frommapname, tomapname)
 
-        frommax = 0
-        for key in tolinux.keys():
-            if key > frommax:
-                frommax = key
+        keys = tolinux.keys()
+        keys.sort()
+        if type(keys[0]) == int:
+            keys = range(keys[-1] + 1)
 
-        self._array_start_name(varname, frommax + 1)
+        self._array_start_name(varname, len(keys), type(keys[0]))
 
-        for src in range(frommax + 1):
+        for src in keys:
             linux = tolinux.get(src, None)
             if linux is None:
                 dst = None
@@ -396,7 +400,7 @@ class LanguageSrcGenerator(LanguageGenerator):
         if varname is None:
             varname = "name_table_%s" % mapname
 
-        self._array_start_name(varname, len(keys))
+        self._array_start_name(varname, len(keys), int)
 
         for i in range(len(keys)):
             key = keys[i]
@@ -488,37 +492,52 @@ class CLanguageGenerator(LanguageSrcGenerator):
             print(" * %s" % line)
         print("*/")
 
-    def _array_start_code(self, varname, length):
-        print("const %s %s[%d] = {" % (self.inttypename, varname, length))
+    def _array_start_code(self, varname, length, fromtype, totype):
+        totypename = self.inttypename if totype == int else self.strtypename
+        if fromtype == int:
+            print("const %s %s[%d] = {" % (totypename, varname, length))
+        else:
+            print("const struct _%s {" % varname)
+            print("  const %s from;" % self.strtypename)
+            print("  const %s to;" % totypename)
+            print("} %s[] = {" % varname)
 
-    def _array_start_name(self, varname, length):
-        print("const %s %s[%d] = {" % (self.strtypename, varname, length))
+    def _array_start_name(self, varname, length, fromtype):
+        self._array_start_code(varname, length, fromtype, str);
 
     def _array_end(self):
         print("};")
 
     def _array_entry_code(self, index, value, comment):
-        if value is not None:
-            print("  [0x%x] = 0x%x, /* %s */" % (index, value, comment))
+        if value is None:
+            return
+        if type(index) == int:
+            if type(value) == int:
+                print("  [0x%x] = 0x%x, /* %s */" % (index, value, comment))
+            else:
+                print("  [0x%x] = \"%s\", /* %s */" % (index, value, comment))
+        else:
+            if type(value) == int:
+                print("  {\"%s\", 0x%x}, /* %s */" % (index, value, comment))
+            else:
+                print("  {\"%s\", \"%s\"}, /* %s */" % (index, value, comment))
 
     def _array_entry_name(self, index, value, comment):
-        if value is not None:
-            print("  [0x%x] = \"%s\", /* %s */" % (index, value, comment))
+        self._array_entry_code(index, value, comment)
 
 class CppLanguageGenerator(CLanguageGenerator):
 
     # designated initializers not available in C++
     def _array_entry_code(self, index, value, comment):
-        if value is not None:
+        if type(index) != int:
+            return super(CppLanguageGenerator, self)._array_entry_code(index, value, comment)
+
+        if value is None:
+            print("  0, /* %s */" % comment)
+        elif type(value) == int:
             print("  0x%x, /* %s */" % (value, comment))
         else:
-            print("  0, /* %s */" % comment)
-
-    def _array_entry_name(self, index, value, comment):
-        if value is not None:
             print("  \"%s\", /* %s */" % (value, comment))
-        else:
-            print("  0, /* %s */" % comment)
 
 class StdCLanguageGenerator(CLanguageGenerator):
 
@@ -543,26 +562,40 @@ class PythonLanguageGenerator(LanguageSrcGenerator):
             print("# %s" % line)
         print("#")
 
-    def _array_start_code(self, varname, length):
-        print("%s = [" % varname)
+    def _array_start_code(self, varname, length, fromtype, totype):
+        self._fromtype = fromtype
+        if fromtype == int:
+            print("%s = [" % varname)
+        else:
+            print("%s = {" % varname)
 
-    def _array_start_name(self, varname, length):
-        print("%s = [" % varname)
+    def _array_start_name(self, varname, length, fromtype):
+        self._array_start_code(varname, length, fromtype, str);
 
     def _array_end(self):
-        print("]")
+        if self._fromtype == int:
+            print("]")
+        else:
+            print("}")
 
     def _array_entry_code(self, index, value, comment):
-        if value is None:
-            print("  None, # %s" % (comment))
+        if type(index) == int:
+            if value is None:
+                print("  None, # %s" % (comment))
+            elif type(value) == int:
+                print("  0x%x, # %s" % (value, comment))
+            else:
+                print("  \"%s\", # %s" % (value, comment))
         else:
-            print("  0x%x, # %s" % (value, comment))
+            if value is None:
+                print("  \"%s\": None, # %s" % (index, comment))
+            elif type(value) == int:
+                print("  \"%s\": 0x%x, # %s" % (index, value, comment))
+            else:
+                print("  \"%s\": \"%s\", # %s" % (index, value, comment))
 
     def _array_entry_name(self, index, value, comment):
-        if value is None:
-            print("  None, # %s" % (comment))
-        else:
-            print("  \"%s\", # %s" % (value, comment))
+        self._array_entry_code(index, value, comment)
 
 class PerlLanguageGenerator(LanguageSrcGenerator):
 
@@ -572,26 +605,36 @@ class PerlLanguageGenerator(LanguageSrcGenerator):
             print("# %s" % line)
         print("#")
 
-    def _array_start_code(self, varname, length):
-        print("my @%s = (" % varname)
+    def _array_start_code(self, varname, length, fromtype, totype):
+        if fromtype == int:
+            print("my @%s = (" % varname)
+        else:
+            print("my %%%s = (" % varname)
 
-    def _array_start_name(self, varname, length):
-        print("my @%s = (" % varname)
+    def _array_start_name(self, varname, length, fromtype):
+        self._array_start_code(varname, length, fromtype, str);
 
     def _array_end(self):
         print(");")
 
     def _array_entry_code(self, index, value, comment):
-        if value is None:
-            print("  undef, # %s" % (comment))
+        if type(index) == int:
+            if value is None:
+                print("  undef, # %s" % (comment))
+            elif type(value) == int:
+                print("  0x%x, # %s" % (value, comment))
+            else:
+                print("  \"%s\", # %s" % (value, comment))
         else:
-            print("  0x%x, # %s" % (value, comment))
+            if value is None:
+                print("  \"%s\", undef, # %s" % (index, comment))
+            elif type(value) == int:
+                print("  \"%s\", 0x%x, # %s" % (index, value, comment))
+            else:
+                print("  \"%s\", \"%s\", # %s" % (index, value, comment))
 
     def _array_entry_name(self, index, value, comment):
-        if value is None:
-            print("  undef, # %s" % (comment))
-        else:
-            print("  \"%s\", # %s" % (value, comment))
+        self._array_entry_code(index, value, comment)
 
 class PodLanguageGenerator(LanguageDocGenerator):
 
