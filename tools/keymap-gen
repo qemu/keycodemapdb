@@ -636,6 +636,40 @@ class PerlLanguageGenerator(LanguageSrcGenerator):
     def _array_entry_name(self, index, value, comment):
         self._array_entry_code(index, value, comment)
 
+class JavaScriptLanguageGenerator(LanguageSrcGenerator):
+
+    def _boilerplate(self, lines):
+        print("/*")
+        for line in lines:
+            print(" * %s" % line)
+        print("*/")
+
+    def _array_start_code(self, varname, length, fromtype, totype):
+        print("export default {")
+
+    def _array_start_name(self, varname, length, fromtype):
+        print("export default {")
+
+    def _array_end(self):
+        print("};")
+
+    def _array_entry_code(self, index, value, comment):
+        if value is None:
+            return
+        if type(index) == int:
+            if type(value) == int:
+                print("  0x%x: 0x%x, /* %s */" % (index, value, comment))
+            else:
+                print("  0x%x: \"%s\", /* %s */" % (index, value, comment))
+        else:
+            if type(value) == int:
+                print("  \"%s\": 0x%x, /* %s */" % (index, value, comment))
+            else:
+                print("  \"%s\": \"%s\", /* %s */" % (index, value, comment))
+
+    def _array_entry_name(self, index, value, comment):
+        self._array_entry_code(index, value, comment)
+
 class PodLanguageGenerator(LanguageDocGenerator):
 
     def _boilerplate(self, lines):
@@ -683,6 +717,7 @@ SRC_GENERATORS = {
     "python2": PythonLanguageGenerator(),
     "python3": PythonLanguageGenerator(),
     "perl": PerlLanguageGenerator(),
+    "js": JavaScriptLanguageGenerator(),
 }
 DOC_GENERATORS = {
     "pod": PodLanguageGenerator(),

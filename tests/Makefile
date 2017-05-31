@@ -1,4 +1,4 @@
-TESTS := stdc stdc++ python2 python3
+TESTS := stdc stdc++ python2 python3 javascript
 
 check: $(TESTS)
 	@set -e; for fn in $(TESTS); do \
@@ -78,7 +78,35 @@ osx.py: $(SOURCES)
 osx_name.py: $(SOURCES)
 	$(GEN) --lang python2 name-table $(DATA) osx > $@
 
+javascript: node_modules/babel-core \
+            node_modules/babel-plugin-transform-es2015-modules-commonjs \
+            osx2win32.js osx2win32_name.js \
+            osx2xkb.js osx2xkb_name.js \
+            html2win32.js html2win32_name.js \
+            osx.js osx_name.js
+node_modules/babel-core:
+	npm install babel-core
+node_modules/babel-plugin-transform-es2015-modules-commonjs:
+	npm install babel-plugin-transform-es2015-modules-commonjs
+osx2win32.js: $(SOURCES)
+	$(GEN) --lang js code-map $(DATA) osx win32 > $@
+osx2win32_name.js: $(SOURCES)
+	$(GEN) --lang js name-map $(DATA) osx win32 > $@
+osx2xkb.js: $(SOURCES)
+	$(GEN) --lang js code-map $(DATA) osx xkb > $@
+osx2xkb_name.js: $(SOURCES)
+	$(GEN) --lang js name-map $(DATA) osx xkb > $@
+html2win32.js: $(SOURCES)
+	$(GEN) --lang js code-map $(DATA) html win32 > $@
+html2win32_name.js: $(SOURCES)
+	$(GEN) --lang js name-map $(DATA) html win32 > $@
+osx.js: $(SOURCES)
+	$(GEN) --lang js code-table $(DATA) osx > $@
+osx_name.js: $(SOURCES)
+	$(GEN) --lang js name-table $(DATA) osx > $@
+
 clean:
+	rm -rf node_modules
 	rm -f osx2win32.*
 	rm -f osx2win32_name.*
 	rm -f osx2xkb.*
