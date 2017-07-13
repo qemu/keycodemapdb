@@ -493,6 +493,7 @@ class CLanguageGenerator(LanguageSrcGenerator):
         print("*/")
 
     def _array_start_code(self, varname, length, fromtype, totype):
+        self._varname = varname;
         totypename = self.inttypename if totype == int else self.strtypename
         if fromtype == int:
             print("const %s %s[%d] = {" % (totypename, varname, length))
@@ -507,6 +508,8 @@ class CLanguageGenerator(LanguageSrcGenerator):
 
     def _array_end(self):
         print("};")
+        print("const unsigned int %s_len = sizeof(%s)/sizeof(%s[0]);" %
+              (self._varname, self._varname, self._varname))
 
     def _array_entry_code(self, index, value, comment):
         if value is None:
