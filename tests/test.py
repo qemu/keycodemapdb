@@ -6,5 +6,7 @@
 # and 3-clause BSD licenses.
 
 import osx2win32
+import osx
 
 assert osx2win32.code_map_osx_to_win32[0x1d] == 0x30
+assert osx.code_table_osx[0x1d] == 0x3b;

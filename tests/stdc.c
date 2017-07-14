@@ -9,10 +9,12 @@
 
 #include <assert.h>
 #include "osx2win32.h"
+#include "osx.h"
 
 int main(int argc, char** argv)
 {
 	assert(code_map_osx_to_win32[0x1d] == 0x30);
+	assert(code_table_osx[0x1d] == 0x3b);
 
 	return 0;
 }

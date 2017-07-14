@@ -13,20 +13,27 @@ SOURCES := $(GEN) $(DATA)
 
 .DELETE_ON_ERROR:
 
-stdc: stdc.c osx2win32.h
+stdc: stdc.c osx2win32.h osx.h
 	$(CC) -o $@ $^
 osx2win32.h: $(SOURCES)
 	$(GEN) --lang stdc code-map $(DATA) osx win32 > $@
+osx.h: $(SOURCES)
+	$(GEN) --lang stdc code-table $(DATA) osx > $@
 
-stdc++: stdc++.cc osx2win32.hh
+stdc++: stdc++.cc osx2win32.hh osx.hh
 	$(CC) -o $@ $^
 osx2win32.hh: $(SOURCES)
 	$(GEN) --lang stdc++ code-map $(DATA) osx win32 > $@
+osx.hh: $(SOURCES)
+	$(GEN) --lang stdc++ code-table $(DATA) osx > $@
 
-python2: osx2win32.py
+python2: osx2win32.py osx.py
 osx2win32.py: $(SOURCES)
 	$(GEN) --lang python2 code-map $(DATA) osx win32 > $@
+osx.py: $(SOURCES)
+	$(GEN) --lang python2 code-table $(DATA) osx > $@
 
 clean:
 	rm -f osx2win32.*
+	rm -f osx.*
 	rm -f stdc stdc++
