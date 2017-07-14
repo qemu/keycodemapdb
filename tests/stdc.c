@@ -13,6 +13,7 @@
 #include "osx2win32.h"
 #include "osx2win32_name.h"
 #include "osx.h"
+#include "osx_name.h"
 
 int main(int argc, char** argv)
 {
@@ -20,6 +21,7 @@ int main(int argc, char** argv)
 	assert(strcmp(name_map_osx_to_win32[0x1d], "VK_0") == 0);
 
 	assert(code_table_osx[0x1d] == 0x3b);
+	assert(strcmp(name_table_osx[0x1d], "Control") == 0);
 
 	return 0;
 }

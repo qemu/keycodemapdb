@@ -8,8 +8,10 @@
 import osx2win32
 import osx2win32_name
 import osx
+import osx_name
 
 assert osx2win32.code_map_osx_to_win32[0x1d] == 0x30
 assert osx2win32_name.name_map_osx_to_win32[0x1d] == "VK_0"
 
 assert osx.code_table_osx[0x1d] == 0x3b;
+assert osx_name.name_table_osx[0x1d] == "Control";
