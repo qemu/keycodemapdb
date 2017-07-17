@@ -39,7 +39,7 @@ stdc++: stdc++.cc osx2win32.hh osx2win32_name.hh \
              osx2xkb.hh osx2xkb_name.hh \
              html2win32.hh html2win32_name.hh \
              osx.hh osx_name.hh
-	$(CC) -o $@ $^
+	$(CXX) -std=c++11 -o $@ $^
 osx2win32.hh: $(SOURCES)
 	$(GEN) --lang stdc++ code-map $(DATA) osx win32 > $@
 osx2win32_name.hh: $(SOURCES)

@@ -530,6 +530,19 @@ class CLanguageGenerator(LanguageSrcGenerator):
 
 class CppLanguageGenerator(CLanguageGenerator):
 
+    def _array_start_code(self, varname, length, fromtype, totype):
+        totypename = self.inttypename if totype == int else "const " + self.strtypename
+        if fromtype == int:
+            print("#include <vector>")
+            print("const std::vector<%s> %s = {" % (totypename, varname))
+        else:
+            print("#include <map>")
+            print("#include <string>")
+            print("const std::map<const std::string, %s> %s = {" % (totypename, varname))
+
+    def _array_end(self):
+        print("};")
+
     # designated initializers not available in C++
     def _array_entry_code(self, index, value, comment):
         if type(index) != int:
