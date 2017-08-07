@@ -82,6 +82,10 @@ class Database:
     # QEMU keycodes
     MAP_QCODE = "qcode"
 
+    # Sun / Sparc  scan codes
+    # Reference: "SPARC International Keyboard Spec 1", page 7 "US scan set"
+    MAP_SUN = "sun"
+
     MAP_LIST = (
         MAP_LINUX,
         MAP_OSX,
@@ -96,6 +100,7 @@ class Database:
         MAP_HTML,
         MAP_XKB,
         MAP_QCODE,
+        MAP_SUN,
 
         # These are derived from maps above
         MAP_XTKBD,
@@ -119,6 +124,7 @@ class Database:
         MAP_X11: 13,
         MAP_HTML: 14,
         MAP_XKB: 15,
+        MAP_SUN: 17,
     }
 
     ENUM_COLUMNS = {
