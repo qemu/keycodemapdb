@@ -17,7 +17,7 @@ stdc: stdc.c osx2win32.h osx2win32_name.h \
              osx2xkb.h osx2xkb_name.h \
              html2win32.h html2win32_name.h \
              osx.h osx_name.h
-	$(CC) -o $@ $^
+	$(CC) -Wall -o $@ $^
 osx2win32.h: $(SOURCES)
 	$(GEN) --lang stdc code-map $(DATA) osx win32 > $@
 osx2win32_name.h: $(SOURCES)
@@ -39,7 +39,7 @@ stdc++: stdc++.cc osx2win32.hh osx2win32_name.hh \
              osx2xkb.hh osx2xkb_name.hh \
              html2win32.hh html2win32_name.hh \
              osx.hh osx_name.hh
-	$(CXX) -std=c++11 -o $@ $^
+	$(CXX) -Wall -std=c++11 -o $@ $^
 osx2win32.hh: $(SOURCES)
 	$(GEN) --lang stdc++ code-map $(DATA) osx win32 > $@
 osx2win32_name.hh: $(SOURCES)
