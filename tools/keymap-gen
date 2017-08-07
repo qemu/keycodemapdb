@@ -79,6 +79,9 @@ class Database:
     # XKB key names
     MAP_XKB = "xkb"
 
+    # QEMU keycodes
+    MAP_QCODE = "qcode"
+
     MAP_LIST = (
         MAP_LINUX,
         MAP_OSX,
@@ -92,6 +95,7 @@ class Database:
         MAP_X11,
         MAP_HTML,
         MAP_XKB,
+        MAP_QCODE,
 
         # These are derived from maps above
         MAP_XTKBD,
@@ -124,6 +128,7 @@ class Database:
         MAP_X11: 12,
         MAP_HTML: 14,
         MAP_XKB: 15,
+        MAP_QCODE: 16,
     }
 
     def __init__(self):
