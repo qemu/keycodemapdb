@@ -86,6 +86,10 @@ class Database:
     # Reference: "SPARC International Keyboard Spec 1", page 7 "US scan set"
     MAP_SUN = "sun"
 
+    # Apple Desktop Bus
+    # Reference: http://www.archive.org/stream/apple-guide-macintosh-family-hardware/Apple_Guide_to_the_Macintosh_Family_Hardware_2e#page/n345/mode/2up
+    MAP_ADB = "adb"
+
     MAP_LIST = (
         MAP_LINUX,
         MAP_OSX,
@@ -101,6 +105,7 @@ class Database:
         MAP_XKB,
         MAP_QCODE,
         MAP_SUN,
+        MAP_ADB,
 
         # These are derived from maps above
         MAP_XTKBD,
@@ -125,6 +130,7 @@ class Database:
         MAP_HTML: 14,
         MAP_XKB: 15,
         MAP_SUN: 17,
+        MAP_ADB: 18,
     }
 
     ENUM_COLUMNS = {
