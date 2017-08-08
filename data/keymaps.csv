@@ -1,5 +1,5 @@
 "Linux Name","Linux Keycode","OS-X Name","OS-X Keycode","AT set1 keycode","AT set2 keycode","AT set3 keycode","USB Keycodes","Win32 Name","Win32 Keycode","Xwin XT","Xfree86 KBD XT","X11 keysym name","X11 keysym","HTML code","XKB key name","QEMU QKeyCode","Sun KBD","Apple ADB"
-KEY_RESERVED,0,,,,,,,,,,,,,,,unmapped,,
+KEY_RESERVED,0,,0xff,,,,,,,,,,,,,unmapped,,0xff
 KEY_ESC,1,Escape,0x35,0x01,0x76,0x08,41,VK_ESCAPE,0x1b,1,1,XK_Escape,0xff1b,Escape,ESC,esc,0x1d,0x35
 KEY_1,2,ANSI_1,0x12,0x02,0x16,0x16,30,VK_1,0x31,2,2,XK_1,0x0031,Digit1,AE01,1,0x1e,0x12
 KEY_1,2,ANSI_1,0x12,0x02,0x16,0x16,30,VK_1,0x31,2,2,XK_exclam,0x0021,Digit1,AE01,1,0x1e,0x12

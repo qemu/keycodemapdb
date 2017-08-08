@@ -320,7 +320,7 @@ class LanguageSrcGenerator(LanguageGenerator):
     TYPE_STRING = "string"
     TYPE_ENUM = "enum"
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         raise NotImplementedError()
 
     def _array_end(self, fromtype, totype):
@@ -367,14 +367,18 @@ class LanguageSrcGenerator(LanguageGenerator):
         else:
             keymax = len(keys)
 
-        self._array_start(varname, keymax, fromtype, totype)
+        defvalue = fromlinux.get(0, None)
+        if fromtype == self.TYPE_ENUM:
+            self._array_start(varname, keymax, defvalue, fromtype, totype)
+        else:
+            self._array_start(varname, keymax, None, fromtype, totype)
 
         for src in keys:
             linux = tolinux.get(src, None)
             if linux is None:
                 dst = None
             else:
-                dst = fromlinux.get(linux, None)
+                dst = fromlinux.get(linux, defvalue)
 
             comment = "%s -> %s -> %s" % (self._label(database, frommapname, src, linux),
                                           self._label(database, Database.MAP_LINUX, linux, linux),
@@ -401,11 +405,12 @@ class LanguageSrcGenerator(LanguageGenerator):
         else:
             totype = self.TYPE_INT
 
-        self._array_start(varname, len(keys), self.TYPE_INT, totype)
+        self._array_start(varname, len(keys), None, self.TYPE_INT, totype)
 
+        defvalue = database.mapto[mapname].get(0, None)
         for i in range(len(keys)):
             key = keys[i]
-            dst = database.mapto[mapname].get(key, None)
+            dst = database.mapto[mapname].get(key, defvalue)
             self._array_entry(i, dst, names[i], self.TYPE_INT, totype)
 
         self._array_end(self.TYPE_INT, totype)
@@ -434,7 +439,7 @@ class LanguageSrcGenerator(LanguageGenerator):
         else:
             fromtype = self.TYPE_STRING
 
-        self._array_start(varname, len(keys), fromtype, self.TYPE_STRING)
+        self._array_start(varname, len(keys), None, fromtype, self.TYPE_STRING)
 
         for src in keys:
             linux = tolinux.get(src, None)
@@ -461,7 +466,7 @@ class LanguageSrcGenerator(LanguageGenerator):
         if varname is None:
             varname = "name_table_%s" % mapname
 
-        self._array_start(varname, len(keys), self.TYPE_INT, self.TYPE_STRING)
+        self._array_start(varname, len(keys), None, self.TYPE_INT, self.TYPE_STRING)
 
         for i in range(len(keys)):
             key = keys[i]
@@ -553,7 +558,7 @@ class CLanguageGenerator(LanguageSrcGenerator):
             print(" * %s" % line)
         print("*/")
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         self._varname = varname;
         totypename = self.strtypename if totype == self.TYPE_STRING else self.inttypename
         if fromtype in (self.TYPE_INT, self.TYPE_ENUM):
@@ -566,6 +571,18 @@ class CLanguageGenerator(LanguageSrcGenerator):
             print("  const %s from;" % self.strtypename)
             print("  const %s to;" % totypename)
             print("} %s[] = {" % varname)
+
+        if defvalue != None:
+            if totype == self.TYPE_ENUM:
+                if type(length) == str:
+                    print("  [0 ... %s-1] = %s," % (length, defvalue))
+                else:
+                    print("  [0 ... 0x%x-1] = %s," % (length, defvalue))
+            else:
+                if type(length) == str:
+                    print("  [0 ... %s-1] = 0x%x," % (length, defvalue))
+                else:
+                    print("  [0 ... 0x%x-1] = 0x%x," % (length, defvalue))
 
     def _array_end(self, fromtype, totype):
         print("};")
@@ -596,7 +613,7 @@ class CLanguageGenerator(LanguageSrcGenerator):
 
 class CppLanguageGenerator(CLanguageGenerator):
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         if fromtype == self.TYPE_ENUM:
             raise NotImplementedError("Enums not supported as source in C++ generator")
         totypename = "const " + self.strtypename if totype == self.TYPE_STRING else self.inttypename
@@ -648,7 +665,7 @@ class PythonLanguageGenerator(LanguageSrcGenerator):
             print("# %s" % line)
         print("#")
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         if fromtype == self.TYPE_ENUM:
             raise NotImplementedError("Enums not supported as source in Python generator")
 
@@ -691,7 +708,7 @@ class PerlLanguageGenerator(LanguageSrcGenerator):
             print("# %s" % line)
         print("#")
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         if fromtype == self.TYPE_ENUN:
             raise NotImplementedError("Enums not supported as source in Python generator")
         if fromtype == self.TYPE_INT:
@@ -730,7 +747,7 @@ class JavaScriptLanguageGenerator(LanguageSrcGenerator):
             print(" * %s" % line)
         print("*/")
 
-    def _array_start(self, varname, length, fromtype, totype):
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
         print("export default {")
 
     def _array_end(self, fromtype, totype):
