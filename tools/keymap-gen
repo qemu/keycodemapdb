@@ -147,6 +147,10 @@ class Database:
         MAP_QCODE: 16,
     }
 
+    ENUM_BOUND = {
+        MAP_QCODE: "Q_KEY_CODE__MAX",
+    }
+
     def __init__(self):
 
         self.mapto = {}
@@ -359,7 +363,7 @@ class LanguageSrcGenerator(LanguageGenerator):
             keys = range(keys[-1] + 1)
 
         if fromtype == self.TYPE_ENUM:
-            keymax = None
+            keymax = database.ENUM_BOUND[frommapname]
         else:
             keymax = len(keys)
 
@@ -553,8 +557,8 @@ class CLanguageGenerator(LanguageSrcGenerator):
         self._varname = varname;
         totypename = self.strtypename if totype == self.TYPE_STRING else self.inttypename
         if fromtype in (self.TYPE_INT, self.TYPE_ENUM):
-            if length is None:
-                print("const %s %s[] = {" % (totypename, varname))
+            if type(length) == str:
+                print("const %s %s[%s] = {" % (totypename, varname, length))
             else:
                 print("const %s %s[%d] = {" % (totypename, varname, length))
         else:
