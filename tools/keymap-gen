@@ -70,8 +70,8 @@ class Database:
     # Xorg + Cygwin: xwinxt + an offset
     MAP_XORGXWIN = "xorgxwin"
 
-    # XT over RFB: xtkbd + special re-encoding of high bit
-    MAP_RFB = "rfb"
+    # QEMU key numbers: xtkbd + special re-encoding of high bit
+    MAP_QNUM = "qnum"
 
     # HTML codes
     MAP_HTML = "html"
@@ -113,7 +113,7 @@ class Database:
         MAP_XORGKBD,
         MAP_XORGXQUARTZ,
         MAP_XORGXWIN,
-        MAP_RFB,
+        MAP_QNUM,
     )
 
     CODE_COLUMNS = {
@@ -282,17 +282,17 @@ class Database:
             self.mapto[self.MAP_XORGXWIN][linux] = xorgxwin
             self.mapfrom[self.MAP_XORGXWIN][xorgxwin] = linux
 
-        # RFB keycodes are XT scan codes with a slightly
+        # QNUM keycodes are XT scan codes with a slightly
         # different encoding of 0xe0 scan codes
         if linux in self.mapto[self.MAP_ATSET1]:
             at1 = self.mapto[self.MAP_ATSET1][linux]
             if at1 > 0x7f:
                 assert((at1 & ~0x7f) == 0xe000)
-                rfb = 0x80 | (at1 & 0x7f)
+                qnum = 0x80 | (at1 & 0x7f)
             else:
-                rfb = at1
-            self.mapto[self.MAP_RFB][linux] = rfb
-            self.mapfrom[self.MAP_RFB][rfb] = linux
+                qnum = at1
+            self.mapto[self.MAP_QNUM][linux] = qnum
+            self.mapfrom[self.MAP_QNUM][qnum] = linux
 
         if linux in self.mapname[self.MAP_QCODE]:
             qcodeenum = self.mapname[self.MAP_QCODE][linux]
