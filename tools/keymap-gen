@@ -548,9 +548,10 @@ class LanguageDocGenerator(LanguageGenerator):
 
 class CLanguageGenerator(LanguageSrcGenerator):
 
-    def __init__(self, inttypename, strtypename):
+    def __init__(self, inttypename, strtypename, lentypename):
         self.inttypename = inttypename
         self.strtypename = strtypename
+        self.lentypename = lentypename
 
     def _boilerplate(self, lines):
         print("/*")
@@ -586,8 +587,8 @@ class CLanguageGenerator(LanguageSrcGenerator):
 
     def _array_end(self, fromtype, totype):
         print("};")
-        print("const unsigned int %s_len = sizeof(%s)/sizeof(%s[0]);" %
-              (self._varname, self._varname, self._varname))
+        print("const %s %s_len = sizeof(%s)/sizeof(%s[0]);" %
+              (self.lentypename, self._varname, self._varname, self._varname))
 
     def _array_entry(self, index, value, comment, fromtype, totype):
         if value is None:
@@ -645,17 +646,17 @@ class CppLanguageGenerator(CLanguageGenerator):
 class StdCLanguageGenerator(CLanguageGenerator):
 
     def __init__(self):
-        super(StdCLanguageGenerator, self).__init__("unsigned short", "char *")
+        super(StdCLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
 
 class StdCppLanguageGenerator(CppLanguageGenerator):
 
     def __init__(self):
-        super(StdCppLanguageGenerator, self).__init__("unsigned short", "char *")
+        super(StdCppLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
 
 class GLib2LanguageGenerator(CLanguageGenerator):
 
     def __init__(self):
-        super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *")
+        super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *", "guint")
 
 class PythonLanguageGenerator(LanguageSrcGenerator):
 
