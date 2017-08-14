@@ -13,7 +13,12 @@
 from __future__ import print_function
 
 import csv
-import argparse
+try:
+    import argparse
+except:
+    import os, sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../thirdparty"))
+    import argparse
 import hashlib
 import time
 import sys
