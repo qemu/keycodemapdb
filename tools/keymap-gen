@@ -299,6 +299,12 @@ class Database:
             self.mapto[self.MAP_QNUM][linux] = qnum
             self.mapfrom[self.MAP_QNUM][qnum] = linux
 
+            # Hack for compatibility with previous mistakes in handling
+            # Print/SysRq. The preferred qnum for Print/SysRq is 0x54,
+            # but QEMU previously allowed 0xb7 too
+            if qnum == 0x54:
+                self.mapfrom[self.MAP_QNUM][0xb7] = self.mapfrom[self.MAP_QNUM][0x54]
+
         if linux in self.mapname[self.MAP_QCODE]:
             qcodeenum = self.mapname[self.MAP_QCODE][linux]
             qcodeenum = "Q_KEY_CODE_" + qcodeenum.upper()
