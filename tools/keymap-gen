@@ -633,6 +633,58 @@ class GLib2LanguageGenerator(CLanguageGenerator):
     def __init__(self):
         super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *", "guint")
 
+class CHeaderLanguageGenerator(LanguageSrcGenerator):
+
+    def __init__(self, inttypename, strtypename, lentypename):
+        self.inttypename = inttypename
+        self.strtypename = strtypename
+        self.lentypename = lentypename
+
+    def _boilerplate(self, lines):
+        print("/*")
+        for line in lines:
+            print(" * %s" % line)
+        print("*/")
+
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
+        self._varname = varname
+        if fromtype == self.TYPE_STRING:
+            self._length = 0
+        else:
+            self._length = length
+
+    def _array_end(self, fromtype, totype):
+        totypename = self.strtypename if totype == self.TYPE_STRING else self.inttypename
+        if fromtype == self.TYPE_STRING:
+            vartypename = "struct _%s" % self._varname
+            print("%s {" % vartypename)
+            print("  const %s from;" % self.strtypename)
+            print("  const %s to;" % totypename)
+            print("};")
+        else:
+            vartypename = totypename
+        if type(self._length) == str:
+            print("extern const %s %s[%s];" % (vartypename, self._varname, self._length))
+        else:
+            print("extern const %s %s[%d];" % (vartypename, self._varname, self._length))
+        print("extern const %s %s_len;" % (self.lentypename, self._varname))
+
+    def _array_entry(self, index, value, comment, fromtype, totype):
+        if value is None:
+            return
+        if fromtype == self.TYPE_STRING:
+            self._length += 1
+
+class StdCHeaderLanguageGenerator(CHeaderLanguageGenerator):
+
+    def __init__(self):
+        super(StdCHeaderLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
+
+class GLib2HeaderLanguageGenerator(CHeaderLanguageGenerator):
+
+    def __init__(self):
+        super(GLib2HeaderLanguageGenerator, self).__init__("guint16", "gchar *", "guint")
+
 class CppLanguageGenerator(CLanguageGenerator):
 
     def _array_start(self, varname, length, defvalue, fromtype, totype):
@@ -670,6 +722,32 @@ class StdCppLanguageGenerator(CppLanguageGenerator):
 
     def __init__(self):
         super(StdCppLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
+
+class CppHeaderLanguageGenerator(CHeaderLanguageGenerator):
+
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
+        if fromtype == self.TYPE_ENUM:
+            raise NotImplementedError("Enums not supported as source in C++ generator")
+        totypename = "const " + self.strtypename if totype == self.TYPE_STRING else self.inttypename
+        if fromtype == self.TYPE_INT:
+            print("#include <vector>")
+            print("extern const std::vector<%s> %s;" % (totypename, varname));
+        else:
+            print("#include <map>")
+            print("#include <string>")
+            print("extern const std::map<const std::string, %s> %s;" % (totypename, varname))
+
+    def _array_end(self, fromtype, totype):
+        pass
+
+    # designated initializers not available in C++
+    def _array_entry(self, index, value, comment, fromtype, totype):
+        pass
+
+class StdCppHeaderLanguageGenerator(CppHeaderLanguageGenerator):
+
+    def __init__(self):
+        super(StdCppHeaderLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
 
 class PythonLanguageGenerator(LanguageSrcGenerator):
 
@@ -829,8 +907,11 @@ class PodLanguageGenerator(LanguageDocGenerator):
 
 SRC_GENERATORS = {
     "stdc": StdCLanguageGenerator(),
+    "stdc-header": StdCHeaderLanguageGenerator(),
     "stdc++": StdCppLanguageGenerator(),
+    "stdc++-header": StdCppHeaderLanguageGenerator(),
     "glib2": GLib2LanguageGenerator(),
+    "glib2-header": GLib2HeaderLanguageGenerator(),
     "python2": PythonLanguageGenerator(),
     "python3": PythonLanguageGenerator(),
     "perl": PerlLanguageGenerator(),
