@@ -623,6 +623,16 @@ class CLanguageGenerator(LanguageSrcGenerator):
         else:
             print(("  {" + indexfmt + ", " + valuefmt + "}, /* %s */") % (index, value, comment))
 
+class StdCLanguageGenerator(CLanguageGenerator):
+
+    def __init__(self):
+        super(StdCLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
+
+class GLib2LanguageGenerator(CLanguageGenerator):
+
+    def __init__(self):
+        super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *", "guint")
+
 class CppLanguageGenerator(CLanguageGenerator):
 
     def _array_start(self, varname, length, defvalue, fromtype, totype):
@@ -654,20 +664,10 @@ class CppLanguageGenerator(CLanguageGenerator):
         else:
             print("  \"%s\", /* %s */" % (value, comment))
 
-class StdCLanguageGenerator(CLanguageGenerator):
-
-    def __init__(self):
-        super(StdCLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
-
 class StdCppLanguageGenerator(CppLanguageGenerator):
 
     def __init__(self):
         super(StdCppLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
-
-class GLib2LanguageGenerator(CLanguageGenerator):
-
-    def __init__(self):
-        super(GLib2LanguageGenerator, self).__init__("guint16", "gchar *", "guint")
 
 class PythonLanguageGenerator(LanguageSrcGenerator):
 
