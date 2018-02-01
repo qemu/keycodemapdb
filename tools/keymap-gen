@@ -641,10 +641,12 @@ class CppLanguageGenerator(CLanguageGenerator):
         totypename = "const " + self.strtypename if totype == self.TYPE_STRING else self.inttypename
         if fromtype == self.TYPE_INT:
             print("#include <vector>")
+            print("extern const std::vector<%s> %s;" % (totypename, varname));
             print("const std::vector<%s> %s = {" % (totypename, varname))
         else:
             print("#include <map>")
             print("#include <string>")
+            print("extern const std::map<const std::string, %s> %s;" % (totypename, varname))
             print("const std::map<const std::string, %s> %s = {" % (totypename, varname))
 
     def _array_end(self, fromtype, totype):
