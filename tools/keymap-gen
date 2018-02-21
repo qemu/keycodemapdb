@@ -317,9 +317,8 @@ class LanguageGenerator(object):
         raise NotImplementedError()
 
     def generate_header(self, database, args):
-        today = time.strftime("%Y-%m-%d %H:%M")
         self._boilerplate([
-            "This file is auto-generated from keymaps.csv on %s" % today,
+            "This file is auto-generated from keymaps.csv",
             "Database checksum sha256(%s)" % database.mapchecksum,
             "To re-generate, run:",
             "  %s" % args,
