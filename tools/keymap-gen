@@ -873,7 +873,11 @@ class PodLanguageGenerator(LanguageDocGenerator):
         print("#")
 
     def _array_start_name_doc(self, varname, namemap):
-        print("=head1 %s" % varname)
+        print("=head1 NAME")
+        print("")
+        print("%s" % varname)
+        print("")
+        print("=head1 DESCRIPTION")
         print("")
         print("List of %s key code names, with corresponding key code values" % namemap)
         print("")
@@ -881,7 +885,11 @@ class PodLanguageGenerator(LanguageDocGenerator):
         print("")
 
     def _array_start_code_doc(self, varname, codemap, namemap):
-        print("=head1 %s" % varname)
+        print("=head1 NAME")
+        print("")
+        print("%s" % varname)
+        print("")
+        print("=head1 DESCRIPTION")
         print("")
         print("List of %s key code values, with corresponding %s key code names" % (codemap, namemap))
         print("")
