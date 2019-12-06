@@ -916,6 +916,63 @@ class PodLanguageGenerator(LanguageDocGenerator):
         print("Key name %s" % name)
         print("")
 
+class RSTLanguageGenerator(LanguageDocGenerator):
+
+    def _boilerplate(self, lines):
+        print("..")
+        for line in lines:
+            print("   %s" % line)
+        print("")
+
+    def _array_start_name_doc(self, title, subtitle, namemap):
+        print("=" * len(title))
+        print(title)
+        print("=" * len(title))
+        print("")
+        print("-" * len(subtitle))
+        print(subtitle)
+        print("-" * len(subtitle))
+        print("")
+        print(":Manual section: 7")
+        print(":Manual group: Virtualization Support")
+        print("")
+        print("DESCRIPTION")
+        print("===========")
+        print("List of %s key code names, with corresponding key code values" % namemap)
+        print("")
+
+    def _array_start_code_doc(self, title, subtitle, codemap, namemap):
+        print("=" * len(title))
+        print(title)
+        print("=" * len(title))
+        print("")
+        print("-" * len(subtitle))
+        print(subtitle)
+        print("-" * len(subtitle))
+        print("")
+        print(":Manual section: 7")
+        print(":Manual group: Virtualization Support")
+        print("")
+        print("DESCRIPTION")
+        print("===========")
+        print("List of %s key code values, with corresponding %s key code names" % (codemap, namemap))
+        print("")
+
+    def _array_end(self):
+        print("")
+
+    def _array_name_entry(self, value, name):
+        print("* %s" % name)
+        print("")
+        print("  Key value %d (0x%x)" % (value, value))
+        print("")
+
+    def _array_code_entry(self, value, name):
+        print("* %d (0x%x)" % (value, value))
+        print("")
+        print("  Key name %s" % name)
+        print("")
+
 SRC_GENERATORS = {
     "stdc": StdCLanguageGenerator(),
     "stdc-header": StdCHeaderLanguageGenerator(),
@@ -930,6 +987,7 @@ SRC_GENERATORS = {
 }
 DOC_GENERATORS = {
     "pod": PodLanguageGenerator(),
+    "rst": RSTLanguageGenerator(),
 }
 
 def code_map(args):
