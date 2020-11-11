@@ -994,10 +994,10 @@ def code_map(args):
     database = Database()
     database.load(args.keymaps)
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "code-map", "--lang=%s" % args.lang]
     if args.varname is not None:
         cliargs.append("--varname=%s" % args.varname)
-    cliargs.extend(["code-map", "keymaps.csv", args.frommapname, args.tomapname])
+    cliargs.extend(["keymaps.csv", args.frommapname, args.tomapname])
     SRC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     SRC_GENERATORS[args.lang].generate_code_map(args.varname, database, args.frommapname, args.tomapname)
@@ -1006,10 +1006,10 @@ def code_table(args):
     database = Database()
     database.load(args.keymaps)
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "code-table", "--lang=%s" % args.lang]
     if args.varname is not None:
         cliargs.append("--varname=%s" % args.varname)
-    cliargs.extend(["code-table", "keymaps.csv", args.mapname])
+    cliargs.extend(["keymaps.csv", args.mapname])
     SRC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     SRC_GENERATORS[args.lang].generate_code_table(args.varname, database, args.mapname)
@@ -1018,10 +1018,10 @@ def name_map(args):
     database = Database()
     database.load(args.keymaps)
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "name-map", "--lang=%s" % args.lang]
     if args.varname is not None:
         cliargs.append("--varname=%s" % args.varname)
-    cliargs.extend(["name-map", "keymaps.csv", args.frommapname, args.tomapname])
+    cliargs.extend(["keymaps.csv", args.frommapname, args.tomapname])
     SRC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     SRC_GENERATORS[args.lang].generate_name_map(args.varname, database, args.frommapname, args.tomapname)
@@ -1031,10 +1031,10 @@ def name_table(args):
     database.load(args.keymaps)
 
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "name-table", "--lang=%s" % args.lang]
     if args.varname is not None:
         cliargs.append("--varname=%s" % args.varname)
-    cliargs.extend(["name-table", "keymaps.csv", args.mapname])
+    cliargs.extend(["keymaps.csv", args.mapname])
     SRC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     SRC_GENERATORS[args.lang].generate_name_table(args.varname, database, args.mapname)
@@ -1044,12 +1044,12 @@ def code_docs(args):
     database.load(args.keymaps)
 
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "code-docs", "--lang=%s" % args.lang]
     if args.title is not None:
         cliargs.append("--title=%s" % args.title)
     if args.subtitle is not None:
         cliargs.append("--subtitle=%s" % args.subtitle)
-    cliargs.extend(["code-docs", "keymaps.csv", args.mapname])
+    cliargs.extend(["keymaps.csv", args.mapname])
     DOC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     DOC_GENERATORS[args.lang].generate_code_docs(args.title, args.subtitle, database, args.mapname)
@@ -1059,12 +1059,12 @@ def name_docs(args):
     database.load(args.keymaps)
 
 
-    cliargs = ["keymap-gen", "--lang=%s" % args.lang]
+    cliargs = ["keymap-gen", "name-docs", "--lang=%s" % args.lang]
     if args.title is not None:
         cliargs.append("--title=%s" % args.title)
     if args.subtitle is not None:
         cliargs.append("--subtitle=%s" % args.subtitle)
-    cliargs.extend(["name-docs", "keymaps.csv", args.mapname])
+    cliargs.extend(["keymaps.csv", args.mapname])
     DOC_GENERATORS[args.lang].generate_header(database, " ".join(cliargs))
 
     DOC_GENERATORS[args.lang].generate_name_docs(args.title, args.subtitle, database, args.mapname)
