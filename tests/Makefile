@@ -1,4 +1,4 @@
-TESTS := stdc stdc++ python2 python3 javascript
+TESTS := stdc stdc++ python2 python3 javascript rust
 
 check: $(TESTS)
 	@set -e; for fn in $(TESTS); do \
@@ -136,6 +136,27 @@ osx.js: $(SOURCES)
 	$(GEN) code-table --lang js $(DATA) osx > $@
 osx_name.js: $(SOURCES)
 	$(GEN) name-table --lang js $(DATA) osx > $@
+
+rust: osx2win32.rs osx2win32_name.rs \
+      osx2xkb.rs osx2xkb_name.rs \
+      html2win32.rs html2win32_name.rs \
+      osx.rs osx_name.rs
+osx2win32.rs: $(SOURCES)
+	$(GEN) code-map --lang rust $(DATA) osx win32 > $@
+osx2win32_name.rs: $(SOURCES)
+	$(GEN) name-map --lang rust $(DATA) osx win32 > $@
+osx2xkb.rs: $(SOURCES)
+	$(GEN) code-map --lang rust $(DATA) osx xkb > $@
+osx2xkb_name.rs: $(SOURCES)
+	$(GEN) name-map --lang rust $(DATA) osx xkb > $@
+html2win32.rs: $(SOURCES)
+	$(GEN) code-map --lang rust $(DATA) html win32 > $@
+html2win32_name.rs: $(SOURCES)
+	$(GEN) name-map --lang rust $(DATA) html win32 > $@
+osx.rs: $(SOURCES)
+	$(GEN) code-table --lang rust $(DATA) osx > $@
+osx_name.rs: $(SOURCES)
+	$(GEN) name-table --lang rust $(DATA) osx > $@
 
 clean:
 	rm -rf node_modules
