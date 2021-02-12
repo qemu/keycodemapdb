@@ -752,6 +752,54 @@ class StdCppHeaderLanguageGenerator(CppHeaderLanguageGenerator):
     def __init__(self):
         super(StdCppHeaderLanguageGenerator, self).__init__("unsigned short", "char *", "unsigned int")
 
+
+class RustLanguageGenerator(LanguageSrcGenerator):
+
+    def _boilerplate(self, lines):
+        print("//")
+        for line in lines:
+            print("// %s" % line)
+        print("//")
+
+    def _array_start(self, varname, length, defvalue, fromtype, totype):
+        if fromtype == self.TYPE_ENUM:
+            raise NotImplementedError("Enums not supported as source in Rust generator")
+
+        totypename = "&'static str" if totype == self.TYPE_STRING else "u16"
+        if fromtype != self.TYPE_STRING:
+            print("pub static %s: &'static [%s] = &[" % (varname.upper(), totypename))
+        else:
+            print("pub static %s: phf::Map<&'static str, %s> = phf::phf_map! {" %
+                  (varname.upper(), totypename))
+
+    def _array_end(self, fromtype, totype):
+        if fromtype != self.TYPE_STRING:
+            print("];")
+        else:
+            print("};")
+
+    def _array_entry(self, index, value, comment, fromtype, totype):
+        none = "\"\"" if totype == self.TYPE_STRING else "0"
+        if fromtype == self.TYPE_INT:
+            if value is None:
+                print("  %s, // %s" % (none, comment))
+            elif totype == self.TYPE_INT:
+                print("  0x%x, // %s" % (value, comment))
+            elif totype == self.TYPE_ENUM:
+                print("  %s, // %s" % (value, comment))
+            else:
+                print("  \"%s\", // %s" % (value, comment))
+        else:
+            if value is None:
+                print("  \"%s\" => %s, // %s" % (index, none, comment))
+            elif totype == self.TYPE_INT:
+                print("  \"%s\" => 0x%x, // %s" % (index, value, comment))
+            elif totype == self.TYPE_ENUM:
+                print("  \"%s\" => %s, // %s" % (index, value, comment))
+            else:
+                print("  \"%s\" => \"%s\", // %s" % (index, value, comment))
+
+
 class PythonLanguageGenerator(LanguageSrcGenerator):
 
     def _boilerplate(self, lines):
@@ -984,6 +1032,7 @@ SRC_GENERATORS = {
     "python3": PythonLanguageGenerator(),
     "perl": PerlLanguageGenerator(),
     "js": JavaScriptLanguageGenerator(),
+    "rust": RustLanguageGenerator(),
 }
 DOC_GENERATORS = {
     "pod": PodLanguageGenerator(),
