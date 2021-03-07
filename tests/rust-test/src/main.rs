@@ -7,7 +7,6 @@ include!("../../osx2xkb.rs");
 include!("../../osx_name.rs");
 include!("../../osx.rs");
 
-#[test]
 fn main() {
     assert_eq!(CODE_MAP_OSX_TO_WIN32[0x1d], 0x30);
     assert_eq!(NAME_MAP_OSX_TO_WIN32[0x1d], "VK_0");
@@ -20,4 +19,10 @@ fn main() {
 
     assert_eq!(CODE_TABLE_OSX[0x1d], 0x3b);
     assert_eq!(NAME_TABLE_OSX[0x1d], "Control");
+}
+
+
+#[test]
+fn test() {
+    main()
 }

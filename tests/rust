@@ -2,3 +2,4 @@
 
 cd rust-test
 cargo test
+cargo clippy

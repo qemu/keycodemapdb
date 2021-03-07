@@ -765,11 +765,11 @@ class RustLanguageGenerator(LanguageSrcGenerator):
         if fromtype == self.TYPE_ENUM:
             raise NotImplementedError("Enums not supported as source in Rust generator")
 
-        totypename = "&'static str" if totype == self.TYPE_STRING else "u16"
+        totypename = "&str" if totype == self.TYPE_STRING else "u16"
         if fromtype != self.TYPE_STRING:
-            print("pub static %s: &'static [%s] = &[" % (varname.upper(), totypename))
+            print("pub static %s: &[%s] = &[" % (varname.upper(), totypename))
         else:
-            print("pub static %s: phf::Map<&'static str, %s> = phf::phf_map! {" %
+            print("pub static %s: phf::Map<&str, %s> = phf::phf_map! {" %
                   (varname.upper(), totypename))
 
     def _array_end(self, fromtype, totype):
