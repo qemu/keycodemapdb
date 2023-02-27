@@ -151,6 +151,11 @@ class Database:
         MAP_QCODE: "Q_KEY_CODE__MAX",
     }
 
+    # These keys need special handling since the key press scan code overlaps
+    # the 0x80 bit commonly used to indicate key release.
+    # It also needs handling to ensure that the QNum matches its historical value.
+    HANJA_HANGEUL_KEYS = (0xf1, 0xf2)
+
     def __init__(self):
 
         self.mapto = {}
@@ -252,7 +257,7 @@ class Database:
         # 0xe0 scan codes
         if linux in self.mapto[self.MAP_ATSET1]:
             at1 = self.mapto[self.MAP_ATSET1][linux]
-            if at1 > 0x7f:
+            if at1 > 0x7f and at1 not in self.HANJA_HANGEUL_KEYS:
                 assert((at1 & ~0x7f) == 0xe000)
                 xtkbd = 0x100 | (at1 & 0x7f)
             else:
@@ -286,7 +291,9 @@ class Database:
         # different encoding of 0xe0 scan codes
         if linux in self.mapto[self.MAP_ATSET1]:
             at1 = self.mapto[self.MAP_ATSET1][linux]
-            if at1 > 0x7f:
+            if at1 in self.HANJA_HANGEUL_KEYS:
+                qnum = at1 & 0x7f
+            elif at1 > 0x7f:
                 assert((at1 & ~0x7f) == 0xe000)
                 qnum = 0x80 | (at1 & 0x7f)
             else:
